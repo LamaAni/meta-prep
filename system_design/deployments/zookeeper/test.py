@@ -3,7 +3,7 @@ import random
 import threading
 import time
 from kazoo.client import KazooClient
-from logs import create_logger
+from utils.logs import create_logger
 
 zk = KazooClient(hosts="localhost:2181", read_only=False)
 zk.start()

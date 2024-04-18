@@ -6,7 +6,7 @@ import threading
 import json
 import uuid
 import pika.credentials
-from logs import create_logger
+from utils.logs import create_logger
 
 
 queue = "tester"
