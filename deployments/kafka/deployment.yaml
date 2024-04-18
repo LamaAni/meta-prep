@@ -1,0 +1,71 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: kafka-broker-config
+data:
+  ALLOW_PLAINTEXT_LISTENER: "true"
+  KAFKA_KRAFT_CLUSTER_ID: kafka-cluster
+  KAFKA_INTER_BROKER_USER: admin
+  KAFKA_INTER_BROKER_PASSWORD: password
+  KAFKA_CFG_PROCESS_ROLES: controller,broker
+  KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLERF
+  KAFKA_CFG_LISTENERS: "PLAINTEXT://:9092,CONTROLLER://:9093"
+  KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+  KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: "PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT"
+  KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE: "true"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-service
+spec:
+  selector:
+    app: kafka-broker
+  ports:
+    - port: 9092
+      targetPort: 9092
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: "kafka-broker"
+  labels:
+    app: "kafka-broker"
+spec:
+  replicas: 1
+  serviceName: kafka-service
+  selector:
+    matchLabels:
+      app: kafka-broker
+  template:
+    metadata:
+      name: "kafka-broker"
+      labels:
+        app: "kafka-broker"
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: kafka-broker
+          image: "bitnami/kafka:latest"
+          # resources:
+          #   limits:
+          #     cpu: 200m
+          #     memory: 500Mi
+          #   requests:
+          #     cpu: 100m
+          #     memory: 200Mi
+          envFrom:
+            - configMapRef:
+                name: kafka-broker-config
+          env:
+            - name: KAFKA_CFG_NODE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['apps.kubernetes.io/pod-index']
+            - name: KAFKA_CFG_CONTROLLER_QUORUM_VOTERS
+              value: "$(KAFKA_CFG_NODE_ID)@localhost:9093"
+          ports:
+            - containerPort: 9092
+              name: http-broker
+            - containerPort: 9093
+              name: http-controller

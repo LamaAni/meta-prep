@@ -1,0 +1,52 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: rabbit-mq-config
+data:
+  RABBITMQ_ERLANG_COOKIE: "SWQOKODSQALRPCLNMEQG"
+  RABBITMQ_DEFAULT_USER: "admin"
+  RABBITMQ_DEFAULT_PASS: "password"
+  RABBITMQ_DEFAULT_VHOST: "/"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbit-service
+spec:
+  selector:
+    app: rabbit-mq
+  ports:
+    - port: 9092
+      targetPort: 9092
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: "rabbit-mq"
+  labels:
+    app: "rabbit-mq"
+spec:
+  replicas: 1
+  serviceName: rabbit-service
+  selector:
+    matchLabels:
+      app: rabbit-mq
+  template:
+    metadata:
+      name: "rabbit-mq"
+      labels:
+        app: "rabbit-mq"
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: rabbit-mq
+          image: "rabbitmq:3-management"
+          envFrom:
+            - configMapRef:
+                name: rabbit-mq-config
+          ports:
+            - containerPort: 5672
+              name: service
+            - containerPort: 15672
+              name: console
+

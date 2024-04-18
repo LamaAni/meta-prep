@@ -1,0 +1,56 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: elastic-config
+data:
+  xpack.security.enabled: "false"
+  discovery.type: single-node
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: elastic-service
+spec:
+  selector:
+    app: elastic
+  ports:
+    - port: 9092
+      targetPort: 9092
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: "elastic"
+  labels:
+    app: "elastic"
+spec:
+  replicas: 1
+  serviceName: elastic-service
+  selector:
+    matchLabels:
+      app: elastic
+  template:
+    metadata:
+      name: "elastic"
+      labels:
+        app: "elastic"
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: elastic
+          image: "elasticsearch:8.13.0"
+          envFrom:
+            - configMapRef:
+                name: elastic-config
+          resources:
+            limits:
+              cpu: "1"
+              memory: 1000Mi
+            requests:
+              cpu: 100m
+              memory: 200Mi
+          ports:
+            - containerPort: 9200
+              name: service
+            - containerPort: 9300
+              name: console

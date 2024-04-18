@@ -1,0 +1,61 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: zookeeper-config
+data:
+  ZOOKEEPER_CLIENT_PORT: "2181"
+  ZOOKEEPER_TICK_TIME: "2000"
+  ZOO_ENABLE_AUTH: "false"
+  ALLOW_ANONYMOUS_LOGIN: "true"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zookeeper-service
+spec:
+  selector:
+    app: zookeeper
+  ports:
+    - port: 2181
+      targetPort: 2181
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: "zookeeper"
+  labels:
+    app: "zookeeper"
+spec:
+  replicas: 1
+  serviceName: zookeeper-service
+  selector:
+    matchLabels:
+      app: zookeeper
+  template:
+    metadata:
+      name: "zookeeper"
+      labels:
+        app: "zookeeper"
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: zookeeper
+          image: "bitnami/zookeeper:latest"
+          envFrom:
+            - configMapRef:
+                name: zookeeper-config
+          # env:
+          #   - name: ZOO_MY_ID
+          #     valueFrom:
+          #       fieldRef:
+          #         fieldPath: metadata.labels['apps.kubernetes.io/pod-index']
+          resources:
+            limits:
+              cpu: "1"
+              memory: 1000Mi
+            requests:
+              cpu: 100m
+              memory: 200Mi
+          ports:
+            - containerPort: 2181
+              name: service

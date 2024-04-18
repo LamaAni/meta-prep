@@ -1,0 +1,58 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: cassandra-config
+data:
+  CASSANDRA_USER: "admin"
+  CASSANDRA_PASSWORD: "password"
+  CASSANDRA_HOST: "localhost"
+  CASSANDRA_PASSWORD_SEEDER: "yes"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cassandra-service
+spec:
+  selector:
+    app: cassandra
+  ports:
+    - port: 9042
+      targetPort: 9042
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: "cassandra"
+  labels:
+    app: "cassandra"
+spec:
+  replicas: 1
+  serviceName: cassandra-service
+  selector:
+    matchLabels:
+      app: cassandra
+  template:
+    metadata:
+      name: "cassandra"
+      labels:
+        app: "cassandra"
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: cassandra
+          image: "bitnami/cassandra:latest"
+          envFrom:
+            - configMapRef:
+                name: cassandra-config
+          resources:
+            limits:
+              cpu: "2"
+              memory: 3000Mi
+            requests:
+              cpu: "1"
+              memory: 1000Mi
+          ports:
+            - containerPort: 9042
+              name: service
+            - containerPort: 7000
+              name: cluster
