@@ -161,7 +161,7 @@ flowchart TD;
     db[("Database")]
     media[[Media]]
     ld{Load balancer}
-    users["Users and Apis"]
+    users>"Users and Apis"]
     dbcache[("DBs Cache")]
     subgraph notification["Notification Service"]
         nw1["worker"]
@@ -173,7 +173,7 @@ flowchart TD;
         aw3["worker"]
     end
     users<-->ld
-    users<-->notification
+    notification-->users
     ld<-->media
     ld<-->api
     api<-->dbcache
@@ -295,7 +295,7 @@ The notification and api services are stateless, and can be scaled across zones 
 
 Note that we can add a dynamic horizontal scaler for the api and service to take into account bz days, weekends and hours of operations. This would allow us to utilize less resources in these times.
 
-Hotspots, for messages, can be taken care of by the cahce system and would result in the grp being loaded onto many cahce servers.
+Hotspots, for messages, can be taken care of by the cache system and would result in the grp being loaded onto many cahce servers.
 
 # Monitoring
 
