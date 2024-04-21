@@ -84,6 +84,18 @@ For storage, we only store the incoming data, and therefore would expect, 100 me
 1. Traffic - 1Gb/second in, max 5Tb/s out (if updated every second).
 1. Storage - 5TB/day, or 1.3 PT per year.
 
+## Hotspots
+
+Since some grps may have many users, we would expect that many users may pull the grp data from the database, for this it would be better to implement some cache system - we care about eventual consistency and therefore would be ok in the case of a hotspot taking more time to update.
+
+## Comm methods
+
+Since we are looking for the user to be notified on changes, we should consider the method the api notifies this user, when a user registers to a notification service, the user can keep the connection alive and wait for the notification to respond. In this case, the notification service must use something like a websocket to do so.
+
+We would therefore need the user to connect directly to the notification service and get notification by that channel. (The api should be stateless).
+
+That would mean that the user update queue, would require the notification service to know which server will update each user+channel. Which can be done by the worker.
+
 ## Load
 
 We have 3 load locations,
@@ -91,10 +103,6 @@ We have 3 load locations,
 1. The message send api.
 1. the database
 1. The message notification api.
-
-## Hotspots
-
-Since some grps may have many users, we would expect that many users may pull the grp data from the database, for this it would be better to implement some cache system - we care about eventual consistency and therefore would be ok in the case of a hotspot taking more time to update.
 
 ### Send api
 
@@ -119,9 +127,10 @@ In this case, we can store per user, per channel, what is the last updated times
 
 Message,
 
-- ts
+- id (uuid? or id service?)
+- ts (Can be logical clock per grp)
 - groups(s) (a user target is a group with the user name)
-- user
+- sender (user)
 - metadata
 - text
 - links to media
@@ -153,10 +162,12 @@ System parts,
 1. API service
 1. Change notification service
 1. User notification Queue. (Redis?)
+1. User inbox (set, by message id)
 
 ```mermaid
 flowchart TD;
     queue["N. Queue"]
+    inbox["User inbox"]
     throttling["Throttling set"]
     db[("Database")]
     media[[Media]]
@@ -165,7 +176,7 @@ flowchart TD;
     dbcache[("DBs Cache")]
     subgraph notification["Notification Service"]
         nw1["worker"]
-        nw2["worker"]
+        na1["Api"]
     end
     subgraph api["API"]
         aw1["worker"]
@@ -178,6 +189,7 @@ flowchart TD;
     ld<-->api
     api<-->dbcache
     api-->queue
+    api<-->inbox
     api<-->throttling
     dbcache<-->db
     api<-->queue
@@ -224,7 +236,9 @@ This api part will receive message from users. And will notify the users that a 
    - for each user in grp, add to pending user update set.
    - write now time to grp last updated through cache.
 
-1. Pull all users to notify. For online users, add user to update queue (if not already there)
+1. Pull all users to notify.
+   - For online users, add user to update queue (if not already there)
+   - add message id to user inbox (append)
 
 Note the above scales with the number of users in a grp. This would mean that sending a message to a grp of millions of users, would be very hard. In this case, we can separate the grps into two modes,
 
@@ -247,9 +261,16 @@ Return the status of the current grps the users is registered to, and the time t
 Uses cache.
 
 1. User asks for messages for x grps, giving the last grp update timestamp.
-1. For each grp in grps, load messages older than timestamp
-   - in the cache, if the timestamp of last message is larger than currently known, force update cache from the database.
+1. Checks the user inbox for new message ids, if exists, gets all messages and zeros out the set.
+1. If no message ids in inbox, periodically, messages can be pulled from database - this is a heavy operation.
+1. For all message ids pulled, get the message.
 1. Return the messages to the user.
+
+Note that storing the messages ids for user in an "inbox" would be acceptable, since we would be holding ~50M of these sets, and they would only be active to active users. Note that in the case of lots of pending messages, per user, we could increase the size of database dramatically.
+
+For example if we have a grp with a million users, and we have a 10b id, then we would have another 10mb of data per message sent. That can get costly. For 100 users per group, this is ok.
+
+The latter can be solved by using a feed approach, where messages are pulled from a feed, for large enouph grps. This would be a better approach for these grps, but would require a different message queue.
 
 ## User Notification service
 
@@ -258,7 +279,7 @@ Uses cache.
 1. Get N users to notify, for each
    1. Get the current status of the user (and registered connections), for each
       1. If not online, ack. Continue to next
-      1. notify the user with each connection, and the current time of notification.
+      1. notify the user with each connection, and the current time of notification, by pulling the appropriate connection/user api server from the db, and sending a request to that api. Requests can be made async - if failed thats ok.
       1. Add to ack list.
    1. Ack each user in the ack list.
 
@@ -305,11 +326,19 @@ Hotspots, for messages, can be taken care of by the cache system and would resul
    - load
    - hotspots (though cache should take care)
    - cache size
-1. Active users
+1. Active users.
 1. API Load (DHS)
 1. Notification server load
-1. Notification queue
+1. Notification queue.
 
 # Further optimizations
 
-1. We can imaging a cae where...
+1. We can add an inbox for each user, instead of pulling from cassandra. This would reduce the load on the database, and allow the users to just pull changed grps and messages from the inbox. Since this is an inbox list, synchronized by redis, at worst you would download a message twice.
+
+1. We can implement E2E encryption by using public keys, and private keys. In general, the grp should have a private key that is readable to just the grp members (and not the server). Once that is done, the grp members can encrypt all message via the private key.
+
+In this case we would need each of the users to load the private key from another user (via diffy-helman, or some other private-public key) direct communication. Thus allowing the users to share the grp key. Each user may also save the grp key for persistance on the server, encrypted by a global local key or username and a password. Thus allowing this key to persist across devices and installs.
+
+This would ensure that the server will never read the data.
+
+1. For groups with very large number of users, one can make some groups behave like a newsfeed, with a continues counter. Only when the user pulls from these newsfeeds all messages will be pulled. Otherwise we the feed will keep the last updated ts, last n messages, and users will pull from these only when they are in the active channel, otherwise they would have to scroll history to get these messages.
