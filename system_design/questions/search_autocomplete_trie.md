@@ -203,6 +203,7 @@ Called by the user,
 
 Called by the search engine
 
+1. Check the rules, can this query be added. (Filters?)
 1. Add the query to the pending list in redis. This query will be added to the tree later.
 
 ## Updater service
