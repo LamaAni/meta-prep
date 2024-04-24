@@ -181,7 +181,7 @@ flowchart TD;
     dbcache<-->trie
     dbcache<-->qmap
     updater<-->trie
-    updater<-->pending
+    updater<-->pending F
     updater<-->log
     updater<-->qmap
 ```
