@@ -1,21 +1,4 @@
-# What is linux?
-
-Linux is an operation system written (Linus), based on the then popular unix. The linux system is composed of,
-
-1. Kernal, which
-   1. Manages CPU (What program is running on which cpu now, context switch)
-   1. Manages Memory (MMU, Virtual Memory)
-   1. Manages IO devices (hardware, Disks/Sockets/Inputs/Network)
-   1. Manages resources (hardware -> processes)
-   1. Runs software, and manages applications
-   1. Supports application via system calls,
-      - process control (exec, fork, exit, wait, getpid, ..)
-      - file (open, read, write, close)
-      - network (socket, bind, listen, accept, connect, send, recv)
-      - device (ioctl, mmap)
-      - device drivers (In kernal space, via modules, Block (video) or Char (keyboard))
-
-# Notes on device drivers
+# Device drivers
 
 1. Usually in /dev (not network-devices)
 1. You can run device drivers in user space. But in general they would run in kernal space (with proper permissions)
