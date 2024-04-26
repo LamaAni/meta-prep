@@ -1,10 +1,9 @@
 package main
 
-import (
-	"syscall"
-)
+import "syscall"
 
 func main() {
-	var buf []byte
-	syscall.Read(9, buf)
+	println("test")
+	syscall.Exec("ls", []string{"/tmp"}, []string{})
+	println("Done")
 }
