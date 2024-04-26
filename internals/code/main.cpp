@@ -1,5 +1,8 @@
 #include <sys/wait.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <random>
 
@@ -25,7 +28,7 @@ int test_proc_management()
     }
     else
     {
-        throw "Error";
+        throw std::exception();
     }
 
     execl("/bin/ls", "ls", "-l", NULL);
@@ -34,8 +37,23 @@ int test_proc_management()
 
 int test_files()
 {
+    int fid = open("/tmp/dump.txt", O_RDWR);
+    if (fid == -1)
+    {
+        printf("File not found or other error");
+        throw "Error";
+    }
+
+    char buff[1000];
+    int read_count = read(fid, &buff, sizeof(buff));
+    printf("Read %d bytes: ", read_count);
+    printf("%s", buff);
+
+    close(fid);
+    return 0;
 }
 
 int main()
 {
+    return test_files();
 }
