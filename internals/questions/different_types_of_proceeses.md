@@ -13,6 +13,18 @@ Process types
 1. zombie processes
 1. Orphan process
 
+## Kernel space
+
+A memory address list and permission set where the kernel runs. The kernel is allowed to execute CPU instructions that the child cannot. (ring0 - kernel mode, ring1 - device driver ...)
+
+Applications that fail in the kernel space may affect the whole system.
+
+## User space
+
+Where the applications outside the kernel run. There may be many applications here. CPU instructions are limited to non privileged instructions (ring3- user mode)
+
+Applications that fail in the user space will not affect the whole system
+
 ## Kernel processes
 
 Examples
