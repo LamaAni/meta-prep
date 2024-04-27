@@ -5,6 +5,20 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <random>
+#include <chrono>
+
+auto started = std::chrono::high_resolution_clock::now();
+
+void tic()
+{
+    started = std::chrono::high_resolution_clock::now();
+}
+
+float toc()
+{
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - started);
+    return duration.count() * 1.0 / 1000;
+}
 
 int test_proc_management()
 {
@@ -53,7 +67,24 @@ int test_files()
     return 0;
 }
 
+int heap_vs_stack()
+{
+    tic();
+    int val = 0;
+
+    printf("%d\n", val);
+    int idx = 0;
+    while (idx < 1000000)
+    {
+        val = idx;
+        idx += 1;
+    }
+    printf("%d in %f [ms]\n", val, toc());
+
+    return 0;
+}
+
 int main()
 {
-    return test_files();
+    return heap_vs_stack();
 }
