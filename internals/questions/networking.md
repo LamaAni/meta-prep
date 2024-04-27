@@ -151,6 +151,12 @@ Use an IFB interface when you want to queue and shape incoming traffic.
 
 Simulated networking device - used for testing.
 
+## Tunnel
+
+Network tunneling is a method of transporting data across a public network using protocols that the network doesn't support. (UDP over TCP:)?
+
+Wraps packet inside other packets.
+
 ## IPIP Tunnel
 
 IP over IP tunnel,
@@ -177,3 +183,23 @@ Virtual Tunnel Interface, secure tunnel implemenation. Operate same asn ipip or 
 ## GRE and GRETAP
 
 Generic Routing Encapsulation, also known as GRE. Any layer 3 protocol
+
+## FOU - Foo Over UDP
+
+This is in the transport layer. Tunnel there
+
+## GUE
+
+Generic UDP Encapsulation - UDP tunneling - has its own encapsulation header, which contains the protocol info and other data
+
+## GENEVE
+
+Generic Network Virtualization Encapsulation. Supports all capabilities of,
+
+1. VXLAN
+1. NVGRE
+1. STT
+
+## ERSPAN and IP6ERSPAN
+
+Encapsulated Remote Switched Port Analyzer. uses GRE encapsulation to extend the basic port mirroring capability from Layer 2 to Layer 3 (up a layer for the tunneling)
