@@ -8,6 +8,8 @@ from bole.log import (
     BOLE_LOG_FORMAT_EXTRA_INFO,
 )
 
+REPO_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+
 LOG_FORMAT: str = "".join(
     [
         "[%(gray)s%(timestamp)s%(end_color)s][%(levelcolor)s%(levelname)5s%(end_color)s][%(name)s]",
