@@ -1,17 +1,57 @@
 #!/bin/bash
 
-function proca(){
+function assert() {
+    local code="$1"
+    if [ $code -ne 0 ]; then
+        echo "ERROR:" "$@"
+    fi
+    return $code
+}
+
+function proca() {
     while true; do
         echo "-> Proca"
         sleep 1
-    done 
+    done
 }
 
-# Create a new cgroup hierarchy
-cgcreate -g cpu,memory:my_group
+function procb() {
+    while true; do
+        echo "-> Procb"
+        sleep 1
+    done
+}
 
-# Add a process to the cgroup
-cgclassify -g cpu,memory:my_group 1234
+echo start proc a
+proca &
+PROCA_PID="$!"
+echo $PROCA_PID
 
-# Verify that the process is in the cgroup
-cgget -g cpu,memory:my_group
+CGRP_ID="cpu,memory:test_grp"
+
+function do_groups() {
+    # Create a new cgroup hierarchy
+    sudo cgcreate -g $CGRP_ID
+    assert $? "Failed to create cgroup"
+
+    # Exectue within the grp.
+    sudo cgexec -g $CGRP_ID ls
+    assert $? "Faied to execte within the cgroup"
+
+    # Add a process to the cgroup
+    sudo cgclassify -g $CGRP_ID $PROCA_PID
+    assert $? "Faied to attach to cgroup"
+
+    # Verify that the process is in the cgroup
+    sudo cgget -g $CGRP_ID
+    assert $? "Faied to retrive cgroup info"
+}
+
+do_groups
+code=$?
+if [ $code -eq 0 ]; then
+    sleep 10
+fi
+sudo cgdelete -g $CGRP_ID
+kill $PROCA_PID
+exit $code
