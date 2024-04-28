@@ -196,6 +196,8 @@ class MemoryFS:
 
     def read(self, path: Union[str, List[str]]):
         node = self.get_inode(path, create=False)
+        if node.is_dir:
+            raise Exception("Cannot read the contents of a directory")
         return None if node is None else node.content
 
 
@@ -229,18 +231,6 @@ if __name__ == "__main__":
             fpath = os.path.join(root, f)
             with open(fpath, "r") as raw:
                 fs.append(fpath, raw.read())
-
-    # auto build p
-    # cur_path = ""
-
-    # for i in range(5000):
-    #     # cur_path_parts.append(str(i))
-    #     cur_path = os.path.join(cur_path, str(i))
-
-    #     fs.mkdir(cur_path)
-    #     file_path = os.path.join(cur_path, "txt.txt")
-    #     # str(i)
-    #     fs.append(file_path, str(i))
 
     print("print")
     chars = 100
