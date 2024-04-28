@@ -1,0 +1,3 @@
+#!/bin/bash
+
+unshare -fmuinpUCT --mount-proc /bin/bash
