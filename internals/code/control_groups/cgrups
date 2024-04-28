@@ -1,0 +1,17 @@
+#!/bin/bash
+
+function proca(){
+    while true; do
+        echo "-> Proca"
+        sleep 1
+    done 
+}
+
+# Create a new cgroup hierarchy
+cgcreate -g cpu,memory:my_group
+
+# Add a process to the cgroup
+cgclassify -g cpu,memory:my_group 1234
+
+# Verify that the process is in the cgroup
+cgget -g cpu,memory:my_group
