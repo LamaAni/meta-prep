@@ -1,0 +1,19 @@
+#!/bin/bash
+
+if [ $UID -ne 1000]; then
+    echo "Must run as root. Starting"
+    exit 2
+fi
+
+# Assume trace is active.
+IS_ON="$(cat /sys/kernel/tracing/tracing_on)"
+if [ $IS_ON -ne 1 ]; then
+    echo "Enabling trace"
+    echo 1 >/sys/kernel/tracing/tracing_on
+fi
+tail -f /sys/kernel/debug/tracing/trace
+
+if [ $IS_ON -ne 1 ]; then
+    echo "Disabling trace"
+    echo 0 >/sys/kernel/tracing/tracing_on
+fi
