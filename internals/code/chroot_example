@@ -1,0 +1,13 @@
+#!/bin/bash
+
+REPO_PATH="$(realpath "$(dirname "$0")/../..")"
+
+JAIL_PATH="$REPO_PATH/.local/jail"
+
+mkdir -p $JAIL_PATH &&
+    mkdir -p $JAIL_PATH/bin $JAIL_PATH/lib $JAIL_PATH/lib64 $JAIL_PATH/usr &&
+    sudo mount --bind /bin $JAIL_PATH/bin &&
+    sudo mount --bind /lib $JAIL_PATH/lib &&
+    sudo mount --bind /lib64 $JAIL_PATH/lib64 &&
+    sudo mount --bind /usr $JAIL_PATH/usr &&
+    sudo chroot $JAIL_PATH
