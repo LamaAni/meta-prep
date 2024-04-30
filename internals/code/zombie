@@ -1,0 +1,3 @@
+#!/bin/bash
+exec /bin/sleep 10 &
+sleep 1
