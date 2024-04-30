@@ -1,19 +1,48 @@
 # CPU is under high I/O. How to find the issue?
 
-USE method resources like,
+1. What is this machine
+1. What dose it do..
+1. Details about it.
 
-1. CPUs: sockets, cores, hardware threads (virtual CPUs)
-1. Memory: capacity
-1. Network interfaces
-1. Storage devices: I/O, capacity
-1. Controllers: storage, network cards
-1. Interconnects: CPUs, memory, I/O
+Since cpu is under high IO wait?
 
-for each resource, 3 metric types,
+1. Is there anything that should be writing to disk on this machine? (iotop, or atop->f->d)
+1. If don't know -> run either atop, or sar -d 2, to see if something is actually writing. If so run iotop to see what is writing.
+1. Are there multiple processes that are writing to disk?
+1. What is the memory like?
+1. What is the cpu io_wait? (atop or mpstat -P all ) is it any cpu in particular?
 
-1. Utilization - Avg. time resource is bz. Can be identified in % of timespan. (100% no more work). Represented as %/time (100% in the last minute)
-1. Saturation - How much of the resource is bz. (Can be more than 100%, i.e. buffered work) Queue length (cpu - vmstat 1 'r' column, or iostat -xnz 1, "avgqu-sz" > 1)
-1. Errors - Errors, found in logs. (dmesg)
+# We have possible?
 
-Note that , low utilization dose not mean no saturation -> e.g bursts of work.
+- Slow network
+- Heavy workload (Heavy read write)
+- Bad software (assume not)
+- Storage bottleneck or write crash between two.
+- Bad drive.
+- Processes in Uninterruptable sleep state
 
+# Check components
+
+1. CPU
+1. DISK
+1. Network
+
+Check network, (sar -n DEV,EDEV) looks ok. Low transport, and almost no errors.
+
+- Saturation (no dropped) ~1 %
+- Utilization ~1 %
+
+Check DISK (sudo iotop ) - write is not high. Two programs writing.
+Utilization looks ok 20% but wrqm is high. -- investigate further.
+
+Check cpu (mpstat -P ALL 1) -- cpu is mostly idle.
+
+# Invetigate
+
+1. Disk (what writing)
+
+- Check the iotop and see which apps are writing. Two processes are writing to the same file.
+- check load. And check if the apps are in uninterruptable sleep we have 10 of these.
+- check open files -> are they writing to the same file? - yes they are.
+- they are probably blocking each other.
+- are they supposed to be writing to the same file?
