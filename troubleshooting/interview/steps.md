@@ -40,7 +40,7 @@
    - Time
    - Can be made offline.
 
-## Notes and notifications
+## Problem handling
 
 1. Inform.
    - Scenario

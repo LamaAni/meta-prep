@@ -87,3 +87,16 @@ Issues can be:
 - ulimit (check `ulimit -a`) for your user/group is set to very low. You can't create processes more than ulimit range.
 - Someone started fork bomb. There are no PIDs available actually.
 - All PIDs have specific fd in the file system. You are running out of inodes. No more inodes. (df)
+
+# Unable to boot OS. What can be the issue?
+
+- BIOS Settings
+- Bad MBR
+- Incorrect GRUB
+- No boot/bad boot folder
+- Error sequence.
+- run level?
+
+- Bad disk
+
+Use external drive and check the disk, boot record.
