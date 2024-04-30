@@ -37,7 +37,7 @@ Utilization looks ok 20% but wrqm is high. -- investigate further.
 
 Check cpu (mpstat -P ALL 1) -- cpu is mostly idle.
 
-# Invetigate
+# Investigate
 
 1. Disk (what writing)
 
