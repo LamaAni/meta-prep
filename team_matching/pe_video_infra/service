@@ -1,0 +1,10 @@
+#!/bin/bash
+REPO_PATH="$(realpath "$(dirname "$0")/../..")"
+source $REPO_PATH/utils/common.sh
+
+ln -sf "$(realpath "$(dirname "$0")/view.html")" "$STORAGE_PATH/view.html" || exit $?
+
+{
+    cd $STORAGE_PATH
+    python -m http.server || exit $?
+}

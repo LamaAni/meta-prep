@@ -7,7 +7,7 @@ OUTPUT_PATH="$STORAGE_PATH/video.m3u8"
 
 ffmpeg \
     -i "$SOURCE_PATH" \
-    -c:v libx264 \
+    -c:v libx264 \ 
     -c:a aac \
     -strict \
     -2 \
