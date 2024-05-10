@@ -1,0 +1,17 @@
+#!/bin/bash
+REPO_PATH="$(realpath "$(dirname "$0")/../..")"
+source $REPO_PATH/utils/common.sh
+
+SOURCE_PATH="$STORAGE_PATH/video.mp4"
+OUTPUT_PATH="$STORAGE_PATH/video.m3u8"
+
+ffmpeg \
+    -i "$SOURCE_PATH" \
+    -c:v libx264 \
+    -c:a aac \
+    -strict \
+    -2 \
+    -hls_time 10 \
+    -f hls \
+    -hls_list_size 0 \
+    "$OUTPUT_PATH"

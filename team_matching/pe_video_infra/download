@@ -1,0 +1,6 @@
+#!/bin/bash
+REPO_PATH="$(realpath "$(dirname "$0")/../..")"
+source $REPO_PATH/utils/common.sh
+
+mkdir -p $STORAGE_PATH || exit $?
+curl -Lo $STORAGE_PATH/video.mp4 https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4 || exit $?
